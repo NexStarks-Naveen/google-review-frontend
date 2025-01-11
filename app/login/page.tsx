@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-
+import {getAdmins} from "@/lib/db/drizzle"
+import {generateToken} from "@/lib/jwt"
+import 'dotenv/config';
 export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -12,22 +14,37 @@ export default function Login() {
     handleSubmit,
     formState: { errors },
   } = useForm();
-
   const onSubmit = async (data: any) => {
     setLoading(true);
     // Mocking an API call
-    setTimeout(() => {
-      console.log("User Login Data: ", data);
+    const response=await getAdmins({email:data.email,password:data.password})
+    if(response.length==0){
+      alert("Invalid Credentials")
       setLoading(false);
-      router.push("/dashboard"); // Navigate to dashboard
-    }, 2000);
+      return;
+    }
+    const userData=response[0]
+    const token=await generateToken({email:userData.email,userId:userData.user_id})
+    localStorage.setItem("token",token)
+    if(userData.is_admin){
+      setTimeout(() => {
+        setLoading(false);
+        router.push("/admin"); // Navigate to dashboard
+      }, 2000);
+    }
+    else{
+      setTimeout(() => {
+        setLoading(false);
+        router.push("/dashboard"); // Navigate to dashboard
+      }, 2000);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-700 p-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          Login to Your Account
+          Login to Meta Virtual Tour Dashboard
         </h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Email Field */}
@@ -39,7 +56,7 @@ export default function Login() {
               id="email"
               type="email"
               {...register("email", { required: "Email is required" })}
-              className={`mt-1 w-full px-4 py-2 border ${
+              className={`mt-1 w-full px-4 py-2 border text-black ${
                 errors.email ? "border-red-500" : "border-gray-300"
               } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
             />
@@ -59,7 +76,7 @@ export default function Login() {
               id="password"
               type="password"
               {...register("password", { required: "Password is required" })}
-              className={`mt-1 w-full px-4 py-2 border ${
+              className={`mt-1 w-full px-4 py-2 border text-black ${
                 errors.password ? "border-red-500" : "border-gray-300"
               } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
             />
@@ -83,9 +100,9 @@ export default function Login() {
         </form>
         {/* Footer */}
         <p className="text-sm text-gray-500 text-center mt-6">
-          Don't have an account?{" "}
-          <a href="/signup" className="text-blue-500 hover:underline">
-            Sign up
+          Don't have an account? contact{" "}
+          <a href="mailto:admin@gmail.com" className="text-blue-500 hover:underline">
+            Admin
           </a>
         </p>
       </div>

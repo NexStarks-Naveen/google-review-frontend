@@ -1,33 +1,82 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { validateToken } from "@/lib/jwt";
+import {getReviews, getCustomerData} from "@/lib/db/drizzle"
 
 type Review = {
-  id: number;
-  title: string;
-  content: string;
+  name: string;
+  review: string;
   rating: number;
 };
 
 type User = {
-  name: string;
-  company: string;
-  profilePic: string;
+  email: string;
+  userId: string;
+  profilePic?: string;
+  company?: string;
+  address?: string;
 };
 
 const DashboardPage = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "profile">("dashboard");
+  const [user, setUser] = useState<User | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [reviewsPerPage] = useState(10); // Number of reviews per page
+  const [reviews,setReviews]=useState<Review[]>([]);
 
-  const reviews: Review[] = [
-    { id: 1, title: "Amazing Service!", content: "Loved the service provided!", rating: 5 },
-    { id: 2, title: "Great Product", content: "The product quality was top-notch.", rating: 4 },
-    { id: 3, title: "Quick Delivery", content: "Fast and efficient delivery.", rating: 5 },
-  ];
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
-  const user: User = {
-    name: "John Doe",
-    company: "Tech Solutions Inc.",
-    profilePic: "https://via.placeholder.com/150",
+    const validateUser = async () => {
+      try {
+        const { valid, decoded } = await validateToken(token);
+        if (!valid) {
+          router.push("/login");
+          return;
+        }
+        const data=await getReviews(decoded.userId);
+        setReviews(data)
+        const res= await getCustomerData({user_id:decoded.userId,email:decoded.email})
+        const customerData=res[0]
+        setUser({  email: customerData.email,
+          userId: customerData.user_id,
+          profilePic: customerData.img_url,
+          company: customerData.company_name,
+          address: customerData.address})
+      } catch (error) {
+        console.error("Token validation error:", error);
+        router.push("/login");
+      }
+    };
+    validateUser();
+    setLoading(false); // Set loading to false once validation is successful
+  }, [router]);
+
+  // Prevent rendering the page while loading
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Pagination logic
+  const indexOfLastReview = currentPage * reviewsPerPage;
+  const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+  const currentReviews = reviews.slice(indexOfFirstReview, indexOfLastReview);
+
+  const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
   return (
@@ -68,21 +117,46 @@ const DashboardPage = () => {
               <table className="min-w-full border border-gray-300 bg-white rounded-lg">
                 <thead>
                   <tr className="bg-gray-200">
-                    <th className="px-4 py-2 text-left text-gray-700 font-bold border-b">Title</th>
-                    <th className="px-4 py-2 text-left text-gray-700 font-bold border-b">Content</th>
+                    <th className="px-4 py-2 text-left text-gray-700 font-bold border-b">Name</th>
+                    <th className="px-4 py-2 text-left text-gray-700 font-bold border-b">Review</th>
                     <th className="px-4 py-2 text-left text-gray-700 font-bold border-b">Rating</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {reviews.map((review) => (
-                    <tr key={review.id} className="hover:bg-gray-100">
-                      <td className="px-4 py-2 border-b text-black">{review.title}</td>
-                      <td className="px-4 py-2 border-b text-black">{review.content}</td>
-                      <td className="px-4 py-2 border-b text-black text-yellow-500">{review.rating} ⭐</td>
+                  {currentReviews.map((review) => (
+                    <tr key={review.name} className={`hover:bg-gray-100 ${review.rating <= 2 ? "bg-red-50" : ""}`}>
+                      <td className="px-4 py-2 border-b text-black">{review.name}</td>
+                      <td className="px-4 py-2 border-b text-black">{review.review}</td>
+                      <td className={`px-4 py-2 border-b text-black ${review.rating <= 2 ? "text-red-500" : "text-yellow-500"}`}>{review.rating} ⭐ </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={handlePreviousPage}
+                className={`px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold ${
+                  currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className="text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={handleNextPage}
+                className={`px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold ${
+                  currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
             </div>
           </div>
         )}
@@ -91,13 +165,13 @@ const DashboardPage = () => {
         {activeTab === "profile" && (
           <div className="bg-white rounded-lg shadow-md p-6 flex items-center space-x-6">
             <img
-              src={user.profilePic}
+              src={user?.profilePic}
               alt="Profile Picture"
               className="w-24 h-24 rounded-full border-2 border-blue-500"
             />
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
-              <p className="text-gray-600 mt-1">{user.company}</p>
+              <h2 className="text-2xl font-bold text-gray-800">{user?.company}</h2>
+              <p className="text-gray-600 mt-1">{user?.address}</p>
             </div>
           </div>
         )}
