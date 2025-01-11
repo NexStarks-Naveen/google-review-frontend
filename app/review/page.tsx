@@ -68,7 +68,11 @@ const ReviewPage = () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               {...register("email", { required: "Email is required" })}
             />
-            {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
+            {errors.email && (
+              <p className="text-sm text-red-500 mt-1">
+                {typeof errors.email.message === "string" ? errors.email.message : "An error occurred"}
+              </p>
+            )}
           </div>
 
           {/* Review Description */}
@@ -80,7 +84,11 @@ const ReviewPage = () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               {...register("description", { required: "Description is required" })}
             />
-            {errors.description && <span className="text-red-500 text-sm">{errors.description.message}</span>}
+            {errors.description && (
+              <p className="text-sm text-red-500 mt-1">
+                {typeof errors.description.message === "string" ? errors.description.message : "An error occurred"}
+              </p>
+            )}
           </div>
 
           {/* Contact Number */}

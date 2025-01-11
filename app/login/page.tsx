@@ -13,7 +13,7 @@ export default function Login() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = async (data:any) => {
+  const onSubmit = async (data: any) => {
     setLoading(true);
     // Mocking an API call
     setTimeout(() => {
@@ -44,7 +44,9 @@ export default function Login() {
               } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
             />
             {errors.email && (
-              <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+              <p className="text-sm text-red-500 mt-1">
+                {typeof errors.email.message === "string" ? errors.email.message : "An error occurred"}
+              </p>
             )}
           </div>
 
@@ -62,7 +64,9 @@ export default function Login() {
               } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
             />
             {errors.password && (
-              <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+              <p className="text-sm text-red-500 mt-1">
+                {typeof errors.password.message === "string" ? errors.password.message : "An error occurred"}
+              </p>
             )}
           </div>
 
