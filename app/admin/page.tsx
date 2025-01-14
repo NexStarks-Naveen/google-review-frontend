@@ -52,20 +52,16 @@ const AdminPage = () => {
   // Handle Add Company
   const handleAddCompany = async(data: React.FormEvent) => {
     data.preventDefault();
-    console.log(newCompany);
     setLoading(true)
     const {message,response}:any=await addCustomer(newCompany)
     alert(message)
-    console.log("Testing res",response)
     setLoading(false)
   };
 
   const handleListCompany=async()=>{
     setLoading(true)
     setActiveTab("listCompanies")
-    console.log("Testing list company")
     const data=await getCustomers()
-    console.log(data)
     setCompanies(data)
     setLoading(false)
   }
