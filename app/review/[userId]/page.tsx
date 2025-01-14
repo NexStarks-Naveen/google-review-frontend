@@ -53,9 +53,9 @@ const ReviewPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-8 flex justify-center items-center">
-      <div className="w-full max-w-sm bg-white rounded-lg shadow-xl p-6 relative">
-        <h1 className="text-2xl font-bold text-center text-black mb-6">Submit Your Review</h1>
+    <div className="min-h-screen bg-white p-4 sm:p-8 flex justify-center items-center">
+      <div className="w-full max-w-md sm:max-w-lg bg-white rounded-lg shadow-xl p-6 relative">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center text-black mb-6">Submit Your Review</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Star Rating */}
           <div>
@@ -74,7 +74,7 @@ const ReviewPage = () => {
             {errors.rating && <span className="text-red-500 text-sm">Rating is required</span>}
           </div>
 
-          {/* Email */}
+          {/* Name */}
           <div>
             <label className="block text-black font-semibold mb-2">Name</label>
             <input
@@ -110,23 +110,24 @@ const ReviewPage = () => {
           <div>
             <label className="block text-black font-semibold mb-2">Contact Number</label>
             <input
-                type="tel"
-                placeholder="Enter your Indian contact number"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                {...register("contactNumber", {
-                  required: "Contact number is required",
-                  pattern: {
-                    value: /^[6-9]\d{9}$/,
-                    message: "Enter a valid Indian contact number"
-                  }
-                })}
-              />
-              {errors.contactNumber && (
-                <p className="text-red-500 text-sm mt-1">
-                  {typeof errors.contactNumber.message=="string"?errors.contactNumber.message : "An error occurred"}
-                </p>
-              )}
-
+              type="tel"
+              placeholder="Enter your Indian contact number"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              {...register("contactNumber", {
+                required: "Contact number is required",
+                pattern: {
+                  value: /^[6-9]\d{9}$/,
+                  message: "Enter a valid Indian contact number",
+                },
+              })}
+            />
+            {errors.contactNumber && (
+              <p className="text-red-500 text-sm mt-1">
+                {typeof errors.contactNumber.message === "string"
+                  ? errors.contactNumber.message
+                  : "An error occurred"}
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}

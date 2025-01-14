@@ -15,6 +15,7 @@
     "jsonwebtoken": "^9.0.2",
     "neon-serverless": "^0.5.3",
     "next": "15.1.4",
+    "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",

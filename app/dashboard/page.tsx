@@ -5,6 +5,7 @@ import { validateToken } from "@/lib/jwt";
 import {getReviews, getCustomerData} from "@/lib/db/drizzle"
 
 type Review = {
+  review_id:string;
   name: string;
   review: string;
   rating: number;
@@ -79,6 +80,12 @@ const DashboardPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
+  const handleLogout = () => {
+    // Clear the token from local storage
+    localStorage.removeItem("token");
+    // Redirect to the login page
+    router.push("/login");
+  };
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
@@ -99,6 +106,11 @@ const DashboardPage = () => {
         >
           Profile
         </button>
+        <button className="text-lg font-semibold text-red-500"
+            onClick={handleLogout}
+            >
+            Logout
+          </button>
       </nav>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -124,7 +136,7 @@ const DashboardPage = () => {
                 </thead>
                 <tbody>
                   {currentReviews.map((review) => (
-                    <tr key={review.name} className={`hover:bg-gray-100 ${review.rating <= 2 ? "bg-red-50" : ""}`}>
+                    <tr key={review.review_id} className={`hover:bg-gray-100 ${review.rating <= 2 ? "bg-red-50" : ""}`}>
                       <td className="px-4 py-2 border-b text-black">{review.name}</td>
                       <td className="px-4 py-2 border-b text-black">{review.review}</td>
                       <td className={`px-4 py-2 border-b text-black ${review.rating <= 2 ? "text-red-500" : "text-yellow-500"}`}>{review.rating} ⭐ </td>
